@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { request, PERMISSIONS } from 'react-native-permissions';
 import Geolocation from '@react-native-community/geolocation';
@@ -30,10 +30,11 @@ export default () => {
   const [coordinates, setCoordinates] = useState(null);
   const [loading, setLoading] = useState(false);
   const [barberList, setBarberList] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleLocationFinder = async () => {
     setCoordinates(null);
-    // 2:57
+
     let result = await request(
       Platform.OS === 'android'
         ? PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION
@@ -57,7 +58,15 @@ export default () => {
     setLoading(true);
     setBarberList([]);
 
-    let res = await Api.getBarbers();
+    let lat = null;
+    let lng = null;
+
+    if (coordinates) {
+      lat = coordinates.latitude;
+      lng = coordinates.longitude;
+    }
+
+    let res = await Api.getBarbers(lat, lng, location);
 
     if (res.error !== '') {
       alert('Erro: ' + res.error);
@@ -76,9 +85,25 @@ export default () => {
     getBarbers();
   }, []);
 
+  const onRefresh = () => {
+    setRefreshing(false);
+    getBarbers();
+  }
+
+  const handleLocationSearch = () => {
+    setCoordinates({});
+
+    getBarbers();
+  }
+
   return (
     <Container>
-      <Scroller>
+      <Scroller refreshControl={
+        <RefreshControl 
+          refreshing={refreshing} 
+          onRefresh={onRefresh}
+        />
+      }>
         <HeaderArea>
           <HeaderTitle numberOfLines={2}>
             Encontre o seu barbeiro favorito
@@ -95,6 +120,7 @@ export default () => {
             placeholderTextColor='#FFF'
             value={location}
             onChangeText={text => setLocation(text)}
+            onEndEditing={handleLocationSearch}
           />
 
           <LocationFinder onPress={handleLocationFinder}>
