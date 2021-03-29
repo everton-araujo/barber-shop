@@ -1,4 +1,7 @@
-const BASE_API = 'http://10.0.2.2:3000';
+import AsyncStorage from '@react-native-community/async-storage';
+
+// const BASE_API = 'http://10.0.2.2:3000';
+const BASE_API = 'https://api.b7web.com.br/devbarber/api';
 
 export default {
   checkToken: async (token) => {
@@ -16,7 +19,7 @@ export default {
   },
 
   signIn: async (email, password) => {
-    const req = await fetch(`${BASE_API}/auth/authenticate`, {
+    const req = await fetch(`${BASE_API}/auth/login`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -30,7 +33,7 @@ export default {
   },
 
   signUp: async (name, email, password) => {
-    const req = await fetch(`${BASE_API}/auth/register`, {
+    const req = await fetch(`${BASE_API}/user`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -42,4 +45,14 @@ export default {
     const json = await req.json();
     return json;
   },
+
+  getBarbers: async () => {
+    const token = await AsyncStorage.getItem('token');
+
+    const req = await fetch(`${BASE_API}/barbers?token=${token}`);
+
+    const json = await req.json();
+
+    return json;
+  }
 };

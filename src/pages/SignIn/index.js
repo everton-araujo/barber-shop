@@ -38,7 +38,7 @@ export default () => {
         userDispatch({
           type: 'setAvatar',
           payload: {
-            avatar: 'json.data.avatar'
+            avatar: 'https://api.b7web.com.br/devbarber/media/avatars/4.png'
           }
         });
 
